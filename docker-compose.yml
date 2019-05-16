@@ -1,0 +1,32 @@
+version: '3'
+services:
+  camunda_bpm_0:
+    build: .
+    expose: 
+      - "8080"
+    depends_on:
+      - redis
+  camunda_bpm_1:
+    build: .
+    expose: 
+      - "8080"
+    depends_on:
+      - redis
+  camunda_bpm_2:
+    build: .
+    expose: 
+      - "8080"
+    depends_on:
+      - redis
+  redis:
+    image: redis:3.2-alpine
+  nginx:
+    image: nginx:latest
+    volumes: 
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - camunda_bpm_0
+      - camunda_bpm_1
+      - camunda_bpm_2
+    ports:
+      - "80:80"
