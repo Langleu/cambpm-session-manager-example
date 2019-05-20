@@ -1,0 +1,35 @@
+# Base Image
+FROM camunda/camunda-bpm-platform:tomcat-7.10.0
+
+# Session Manager part
+RUN wget http://central.maven.org/maven2/redis/clients/jedis/2.9.0/jedis-2.9.0.jar -P lib/ && \
+    wget http://repo1.maven.org/maven2/de/javakaffee/msm/memcached-session-manager/2.3.2/memcached-session-manager-2.3.2.jar -P lib/ && \
+    wget http://repo1.maven.org/maven2/de/javakaffee/msm/memcached-session-manager-tc9/2.3.2/memcached-session-manager-tc9-2.3.2.jar -P lib/
+
+# Kyro Serializer
+WORKDIR /camunda/temp
+RUN wget http://repo1.maven.org/maven2/de/javakaffee/msm/msm-kryo-serializer/2.3.2/msm-kryo-serializer-2.3.2.jar && \
+    wget http://repo1.maven.org/maven2/de/javakaffee/kryo-serializers/0.45/kryo-serializers-0.45.jar && \
+    wget http://repo1.maven.org/maven2/com/esotericsoftware/kryo/3.0.3/kryo-3.0.3.jar && \
+    wget http://repo1.maven.org/maven2/com/esotericsoftware/minlog/1.3.1/minlog-1.3.1.jar && \
+    wget http://repo1.maven.org/maven2/com/esotericsoftware/reflectasm/1.11.9/reflectasm-1.11.9.jar && \
+    wget http://repo1.maven.org/maven2/org/ow2/asm/asm/5.2/asm-5.2.jar && \
+    wget http://repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6.jar
+
+RUN cp * ../webapps/camunda/WEB-INF/lib && \
+    cp * ../webapps/engine-rest/WEB-INF/lib
+
+WORKDIR /camunda
+
+RUN rm -rf temp
+
+# Add Manager to context
+RUN sed -i '/^<\/Context>/i \
+    <Manager className="de.javakaffee.web.msm.MemcachedBackupSessionManager" \
+    memcachedNodes="redis://redis:6379" \
+    sticky="false" \
+    sessionBackupAsync="false" \
+    storageKeyPrefix="context" \
+    lockingMode="auto" \
+    transcoderFactoryClass="de.javakaffee.web.msm.serializer.kryo.KryoTranscoderFactory" \
+    />' conf/context.xml

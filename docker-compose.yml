@@ -1,19 +1,17 @@
 version: '3'
 services:
   camunda_bpm_0:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile # change to Dockerfile.session or Dockerfile.kryo
     expose: 
       - "8080"
     depends_on:
       - redis
   camunda_bpm_1:
-    build: .
-    expose: 
-      - "8080"
-    depends_on:
-      - redis
-  camunda_bpm_2:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile # change to Dockerfile.session or Dockerfile.kryo
     expose: 
       - "8080"
     depends_on:
@@ -27,6 +25,5 @@ services:
     depends_on:
       - camunda_bpm_0
       - camunda_bpm_1
-      - camunda_bpm_2
     ports:
       - "80:80"
